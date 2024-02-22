@@ -155,3 +155,129 @@ class Car
 //Сохраняйте комбинации в массив
 //Если выпала определённая комбинация - выводим соответствующую запись в консоль
 //Результат в консоли примерно такой: 'У вас бубновый стрит флеш'.
+import Foundation
+
+enum Suit: String, CaseIterable 
+{
+    case clubs = "️крести", diamonds = "️бубны", hearts = "️черви", spades = "пики"
+}
+
+enum Rank: Int, CaseIterable 
+{
+    case two = 2, three, four, five, six, seven, eight, nine, ten, j, q, k, a
+}
+
+func generateCard() -> (Suit, Rank) 
+{
+    let generatedSuit = Suit.allCases.randomElement()!
+    let generatedRank = Rank.allCases.randomElement()!
+    return (generatedSuit, generatedRank)
+}
+
+func getName(card: (Suit, Rank)) -> String 
+{
+    if card.1.rawValue <= 10 
+    {
+        return "\(card.0.rawValue) \(card.1.rawValue)"
+    } 
+    else 
+    {
+        if card.1.rawValue == 11 
+        {
+            return "\(card.0.rawValue) валет"
+        } 
+        else if card.1.rawValue == 12 
+        {
+            return "\(card.0.rawValue) дама"
+        } 
+        else if card.1.rawValue == 13 
+        {
+            return "\(card.0.rawValue) король"
+        } 
+        else if card.1.rawValue == 14 
+        {
+            return "\(card.0.rawValue) туз"
+        } 
+        else 
+        {
+            return ""
+        }
+    }
+}
+
+func determineCombination(cards: [(Suit, Rank)]) -> String 
+{
+    let ranks = cards.map { $0.1 }.sorted { $0.rawValue < $1.rawValue }
+    let uniqueRanks = Set(ranks)
+    
+    let isStraight = Set([Rank.ten, Rank.j, Rank.q, Rank.k, Rank.a]) == uniqueRanks || (uniqueRanks.count == 5 && ranks.last!.rawValue - ranks.first!.rawValue == 4)
+    
+    let isFlush = Set(cards.map { $0.0 }).count == 1
+
+    if isFlush && isStraight 
+    {
+        if ranks.last == .a 
+        {
+            return "роял-флеш"
+        } else 
+        {
+            return "стрит-флеш"
+        }
+    }
+    
+    if uniqueRanks.count == 2 
+    {
+        let counts = Dictionary(grouping: ranks, by: { $0 }).mapValues { $0.count }
+        if counts.values.contains(4) 
+        {
+            return "каре"
+        } 
+        else 
+        {
+            return "фул-хаус"
+        }
+    }
+    
+    if uniqueRanks.count == 3 
+    {
+        let counts = Dictionary(grouping: ranks, by: { $0 }).mapValues { $0.count }
+        if counts.values.contains(3) 
+        {
+            return "Тройка"
+        } else 
+        {
+            return "Две пары"
+        }
+    }
+    
+    if isFlush 
+    {
+        return "Флеш"
+    }
+    
+    if isStraight 
+    {
+        return "Стрит"
+    }
+    
+    if uniqueRanks.count == 4 
+    {
+        return "Пара"
+    }
+    
+    return "Старшая карта"
+}
+
+var generatedCards: [(Suit, Rank)] = []
+
+for _ in 1...5 
+{
+    generatedCards.append(generateCard())
+}
+
+for card in generatedCards 
+{
+    print(getName(card: card))
+}
+
+print("Комбинация: \(determineCombination(cards: generatedCards))")
